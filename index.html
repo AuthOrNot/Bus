@@ -1,525 +1,472 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wilson Blvd & N Oak St - Real-Time Bus Information</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wilson Blvd &amp; N Oak St — Northeastern University</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:    #CC0000;
+    --bg:     #ffffff;
+    --s1:     #f4f4f4;
+    --s2:     #e8e8e8;
+    --border: #dddddd;
+    --white:  #ffffff;
+    --gray1:  #333333;
+    --gray2:  #888888;
+    --green:  #22c55e;
+    --r: 8px;
+  }
 
-        body {
-            font-family: 'Lato', sans-serif;
-            background: #ffffff;
-            color: #333333;
-            overflow: hidden;
-            height: 100vh;
-        }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-        .signage-container {
-            display: grid;
-            grid-template-columns: 3fr 1fr;
-            height: 100vh;
-            gap: 20px;
-            padding: 20px;
-        }
+  html, body {
+    font-family: 'Lato', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
 
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
 
-        .header {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
+  /* ── TOP BAR ── */
+  .topbar {
+    height: clamp(56px, 4.5vh, 84px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(20px, 2.6vw, 34px);
+    background: var(--red);
+    flex-shrink: 0;
+  }
 
-        .station-brand {
-            margin-bottom: 10px;
-        }
+  .nu-brand { display: flex; align-items: center; gap: 14px; }
+  .nu-accent { width: 3px; height: clamp(22px, 2.4vh, 34px); background: rgba(255,255,255,0.4); border-radius: 2px; }
 
-        .station-title {
-            font-size: 56px;
-            font-weight: 900;
-            color: #212529;
-            margin-bottom: 8px;
-        }
+  .nu-wordmark {
+    font-size: clamp(13px, 1.35vw, 18px);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
 
-        .station-subtitle {
-            font-size: 28px;
-            color: #6c757d;
-        }
+  .topbar-right { display: flex; align-items: center; gap: 18px; }
 
-        .last-updated {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 12px;
-            color: #6c757d;
-        }
+  .live-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 13px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 20px;
+    font-size: clamp(11px, 1.15vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .live-dot { width: 7px; height: 7px; background: var(--white); border-radius: 50%; animation: blink 1.8s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-        .buses-section {
-            flex: 1;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 15px;
-            padding: 30px;
-        }
+  .datetime {
+    font-size: clamp(12px, 1.25vw, 16px);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.85);
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+  }
 
-        .buses-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 15px;
-        }
+  /* ── BODY (single vertical stack) ── */
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 1.4vh, 18px);
+    padding: clamp(14px, 1.6vh, 20px);
+    flex: 1;
+    min-height: 0;
+  }
 
-        .buses-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #212529;
-        }
+  .stop-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(16px, 2vh, 26px) clamp(20px, 2.6vw, 32px);
+    background: var(--white);
+    flex-shrink: 0;
+  }
 
-        .refresh-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            color: #6c757d;
-            cursor: pointer;
-        }
+  .stop-left { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 
-        .refresh-dot {
-            width: 8px;
-            height: 8px;
-            background: #28a745;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
+  .stop-name {
+    font-size: clamp(32px, 5.4vw, 58px);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: #000000;
+    line-height: 1.05;
+  }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+  .stop-meta {
+    font-size: clamp(15px, 2vw, 21px);
+    font-weight: 400;
+    color: var(--gray2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
 
-        .bus-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+  .stop-logo {
+    height: clamp(46px, 6vh, 78px);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .stop-logo img { height: 100%; width: auto; object-fit: contain; }
 
-        .bus-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 120px;
-            gap: 20px;
-            align-items: center;
-            background: #ffffff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
+  /* Buses card — this owns most of the screen */
+  .buses-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--r);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
 
-        .bus-row:hover {
-            background: #f8f9fa;
-            border-color: #adb5bd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+  .col-heads {
+    display: grid;
+    grid-template-columns: clamp(110px, 13vw, 150px) 1fr clamp(90px, 10vw, 130px) clamp(130px, 17vw, 190px);
+    padding: clamp(10px, 1.2vh, 16px) clamp(22px, 2.8vw, 32px);
+    border-bottom: 1px solid #e0e0e0;
+    background: #f4f4f4;
+    flex-shrink: 0;
+  }
+  .ch {
+    font-size: clamp(10px, 1.2vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #888888;
+  }
+  .ch.r { text-align: right; }
+  .ch.c { text-align: center; }
 
-        .route-indicator {
-            padding: 12px 8px;
-            border-radius: 8px;
-            font-weight: 900;
-            text-align: center;
-            font-size: 18px;
-            background: #007bff;
-            color: white;
-            min-height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+  .bus-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 4px 0;
+    overflow: hidden;
+  }
 
-        .destination {
-            font-size: 20px;
-            font-weight: 700;
-            color: #212529;
-        }
+  .bus-row {
+    display: grid;
+    grid-template-columns: clamp(110px, 13vw, 150px) 1fr clamp(90px, 10vw, 130px) clamp(130px, 17vw, 190px);
+    align-items: center;
+    padding: clamp(12px, 1.9vh, 24px) clamp(22px, 2.8vw, 32px);
+    border-radius: 6px;
+    margin-bottom: clamp(4px, 0.6vh, 8px);
+    flex: 1;
+    opacity: 0;
+    animation: rowIn 0.4s ease forwards;
+  }
+  .bus-row:last-child { margin-bottom: 0; }
+  .bus-row.group-start { margin-top: clamp(10px, 1.4vh, 18px); }
 
-        .direction {
-            font-size: 16px;
-            color: #6c757d;
-            margin-top: 2px;
-        }
+  @keyframes rowIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .trip-id {
-            font-size: 14px;
-            color: #6c757d;
-            text-align: center;
-        }
+  .route-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(6px, 0.9vh, 10px) clamp(10px, 1.3vw, 16px);
+    border-radius: 6px;
+    font-size: clamp(15px, 2vw, 22px);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    background: rgba(0,0,0,0.18);
+    min-width: clamp(56px, 6vw, 78px);
+  }
 
-        .arrival-time {
-            font-size: 26px;
-            font-weight: 700;
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            background: #e9ecef;
-            color: #212529;
-        }
+  .dest-wrap { display: flex; flex-direction: column; gap: 3px; }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+  .dest-name {
+    font-size: clamp(18px, 2.6vw, 30px);
+    font-weight: 700;
+    line-height: 1.1;
+  }
 
-        .map-container {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 15px;
-            padding: 15px;
-            flex: 0 0 auto;
-        }
+  .dir-name {
+    font-size: clamp(11px, 1.4vw, 15px);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
 
-        .map-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+  .trip-col { text-align: center; }
+  .trip-val  { font-size: clamp(13px, 1.7vw, 18px); font-weight: 700; }
+  .trip-lbl  { font-size: clamp(9px, 1.1vw, 13px); letter-spacing: 0.08em; text-transform: uppercase; }
 
-        .map-display {
-            width: 100%;
-            height: 180px;
-            background: #ffffff;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            position: relative;
-            overflow: hidden;
-        }
+  .arr-col { display: flex; justify-content: flex-end; }
 
-        .map-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
-        }
+  .arr-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: clamp(8px, 1.2vh, 14px) clamp(16px, 2vw, 24px);
+    border-radius: 6px;
+    min-width: clamp(100px, 12vw, 145px);
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+    background: rgba(0,0,0,0.18);
+  }
+  .arr-num  { font-size: clamp(26px, 4.4vw, 50px); font-weight: 900; line-height: 1; }
+  .arr-unit { font-size: clamp(11px, 1.3vw, 16px); font-weight: 400; align-self: flex-end; margin-bottom: 3px; }
 
-        .map-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #f8f9fa;
-            color: #6c757d;
-            text-align: center;
-            position: relative;
-        }
+  .msg {
+    text-align: center;
+    padding: 28px;
+    color: var(--gray2);
+    font-size: clamp(14px, 1.8vw, 19px);
+    font-style: italic;
+  }
+  .msg.err { color: #ff6b6b; }
 
-        .bus-pin {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            background: #007bff;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            animation: ping 2s infinite;
-        }
+  .info-card-full {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: var(--r);
+    flex-shrink: 0;
+  }
 
-        @keyframes ping {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
+  .card-head {
+    padding: clamp(10px, 1.3vh, 15px) clamp(16px, 2vw, 22px) 0;
+    font-size: clamp(10px, 1.2vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gray2);
+  }
 
-        .info-panel {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 15px;
-            padding: 25px;
-            flex: 1;
-        }
+  .info-body-full {
+    padding: clamp(12px, 1.5vh, 18px) clamp(18px, 2.3vw, 26px);
+    display: flex;
+    align-items: center;
+    gap: clamp(18px, 2.4vw, 32px);
+  }
 
-        .info-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 20px;
-        }
+  .info-row { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .info-key { font-size: clamp(10px, 1.2vw, 14px); font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gray2); }
+  .info-val { font-size: clamp(13px, 1.6vw, 18px); color: var(--gray1); line-height: 1.5; }
 
-        .info-item {
-            margin-bottom: 15px;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #495057;
-        }
+  .v-divider { width: 1px; height: clamp(28px, 4vh, 44px); background: var(--border); flex-shrink: 0; }
 
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 20px;
-        }
+  .status-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: clamp(8px, 1.1vh, 13px) 14px;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .s-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .s-dot.err { background: var(--red); }
+  .s-txt { font-size: clamp(11px, 1.3vw, 15px); color: var(--gray1); }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #28a745;
-            border-radius: 50%;
-        }
+  /* ── FOOTER ── */
+  .footer {
+    height: clamp(28px, 2.4vh, 40px);
+    background: var(--s1);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(18px, 2.2vw, 26px);
+    flex-shrink: 0;
+  }
+  .ft { font-size: clamp(10px, 1.15vw, 14px); color: var(--gray2); letter-spacing: 0.04em; }
 
-        .loading {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .error {
-            color: #dc3545;
-            text-align: center;
-            font-weight: 700;
-        }
-
-        .api-status {
-            position: absolute;
-            bottom: 10px;
-            right: 15px;
-            font-size: 10px;
-            color: #6c757d;
-        }
-    </style>
+  .red-rule { height: 3px; background: var(--red); flex-shrink: 0; }
+</style>
 </head>
 <body>
-    <div class="signage-container">
-        <div class="main-content">
-            <div class="header">
-                <div class="station-brand">
-                    <div class="station-title">Wilson Blvd & N Oak St</div>
-                    <div class="station-subtitle">Real-Time Bus Arrivals</div>
-                </div>
-                <div class="last-updated" id="lastUpdated">Last updated: --:--</div>
-                <div class="api-status" id="apiStatus">API: Connecting...</div>
-            </div>
 
-            <div class="buses-section">
-                <div class="buses-header">
-                    <div class="buses-title">Next Buses</div>
-                    <div class="refresh-indicator" title="Click to refresh">
-                        <div class="refresh-dot"></div>
-                        <span>Live Updates</span>
-                    </div>
-                </div>
-                <div class="bus-list" id="busList">
-                    <div class="loading">Loading real-time bus information...</div>
-                </div>
-            </div>
-        </div>
+<div class="topbar">
+  <div class="nu-brand">
+    <div class="nu-accent"></div>
+    <div class="nu-wordmark">Northeastern University</div>
+  </div>
+  <div class="topbar-right">
+    <div class="datetime" id="dateTime">—</div>
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+  </div>
+</div>
 
-        <div class="sidebar">
-            <div class="map-container">
-                <div class="map-title">Rosslyn neighborhood</div>
-                <div class="map-display">
-                    <!-- Your WMATA system map PNG -->
-                    <img src="system-map-rail-effective-June-22-2025.png" alt="WMATA System Rail Map - Effective June 22, 2025" class="map-image" onerror="showMapPlaceholder(this)">
-                    <div class="map-placeholder" style="display: none;">
-                        <div style="font-size: 14px; margin-bottom: 10px;">🚌 Wilson Blvd & N Oak St</div>
-                        <div style="font-size: 12px;">Arlington, VA</div>
-                        <div style="font-size: 10px; margin-top: 5px;">Stop ID: 6000702</div>
-                        <div class="bus-pin"></div>
-                    </div>
-                </div>
-            </div>
+<div class="body">
 
-            <div class="info-panel">
-                <div class="info-title">Stop Information</div>
-                <div class="info-item"><strong>Stop ID:</strong> 6000702</div>
-                <div class="info-item"><strong>Location:</strong> Wilson Blvd & N Oak St</div>
-                <div class="info-item"><strong>City:</strong> Arlington, VA</div>
-                <div class="info-item"><strong>Near:</strong> Rosslyn Metro Station</div>
-                <div class="status-indicator">
-                    <div class="status-dot" id="statusDot"></div>
-                    <span id="statusText">Stop Status: Checking...</span>
-                </div>
-            </div>
-        </div>
+  <div class="stop-row">
+    <div class="stop-left">
+      <div class="stop-name">Wilson Blvd &amp; N Oak St</div>
+      <div class="stop-meta">Next arriving bus</div>
     </div>
+    <div class="stop-logo">
+      <img src="system-map-rail-effective-June-22-2025.png" alt="WMATA Metro logo">
+    </div>
+  </div>
 
-    <script>
-        // WMATA API configuration
-        const WMATA_API_KEY = '9c43549bb06640adb9681598edeaf056'; // Your API key
-        const BUS_STOP_ID = '6000702'; // Wilson Blvd & N Oak St
+  <div class="buses-card">
+    <div class="col-heads">
+      <div class="ch">Route</div>
+      <div class="ch">Destination</div>
+      <div class="ch c">Trip</div>
+      <div class="ch r">Arrives</div>
+    </div>
+    <div class="bus-list" id="busList">
+      <div class="msg">Loading bus data…</div>
+    </div>
+  </div>
 
-        function formatArrivalTime(minutes) {
-            if (!minutes || minutes === '0') return 'ARR';
-            if (minutes === '1') return '1 min';
-            return minutes + ' mins';
-        }
+  <div class="card info-card-full">
+    <div class="card-head">Stop Info</div>
+    <div class="info-body-full">
+      <div class="info-row">
+        <div class="info-key">Stop ID</div>
+        <div class="info-val">6000702</div>
+      </div>
+      <div class="v-divider"></div>
+      <div class="info-row">
+        <div class="info-key">Location</div>
+        <div class="info-val">Wilson Blvd &amp; N Oak St, Arlington, VA</div>
+      </div>
+      <div class="v-divider"></div>
+      <div class="status-row">
+        <div class="s-dot" id="sDot"></div>
+        <div class="s-txt" id="sTxt">Checking status…</div>
+      </div>
+    </div>
+  </div>
 
-        function updateApiStatus(status, isError = false) {
-            const apiStatus = document.getElementById('apiStatus');
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            
-            apiStatus.textContent = `API: ${status}`;
-            
-            if (isError) {
-                statusDot.style.background = '#dc3545';
-                statusText.textContent = 'Stop Status: Connection Error';
-            } else {
-                statusDot.style.background = '#28a745';
-                statusText.textContent = 'Stop Status: Normal Operations';
-            }
-        }
+</div>
 
-        async function fetchBusData() {
-            try {
-                updateApiStatus('Connecting...');
-                
-                // Validate API key
-                if (!WMATA_API_KEY || WMATA_API_KEY === 'YOUR_WMATA_API_KEY_HERE') {
-                    throw new Error('Please update WMATA_API_KEY with your actual API key');
-                }
-                
-                const response = await fetch(`https://api.wmata.com/NextBusService.svc/json/jPredictions?StopID=${BUS_STOP_ID}&api_key=${WMATA_API_KEY}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error('Invalid API Key - Check your WMATA API key');
-                    } else if (response.status === 429) {
-                        throw new Error('Rate limit exceeded - Too many requests');
-                    } else {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                }
-                
-                const data = await response.json();
-                console.log('API Response:', data);
-                
-                updateApiStatus('Connected');
-                return data;
-                
-            } catch (error) {
-                console.error('Error fetching bus data:', error);
-                updateApiStatus('Error', true);
-                throw error;
-            }
-        }
+<div class="footer">
+  <div class="ft">WMATA Real-Time Data · Stop 6000702</div>
+  <div class="ft" id="lastUpdated">Last updated: —</div>
+</div>
+<div class="red-rule"></div>
 
-        function renderBuses(predictions) {
-            const busList = document.getElementById('busList');
-            
-            if (!predictions || predictions.length === 0) {
-                busList.innerHTML = '<div class="error">No bus predictions available - API returned empty results</div>';
-                return;
-            }
+<script>
+  const API_KEY = '9c43549bb06640adb9681598edeaf056';
+  const BUS_STOP_ID = '6000702';
+  const MAX_ROWS = 8;
+  const TIME_ZONE = 'America/New_York';
 
-            // Filter out any invalid predictions and limit to 8 buses
-            const validPredictions = predictions
-                .filter(pred => pred && pred.RouteID)
-                .slice(0, 8);
+  // Rotating palette used to color-code routes for at-a-glance grouping,
+  // since Metrobus routes don't have an official per-route color system
+  // the way Metrorail lines do.
+  const ROUTE_PALETTE = ['#0073e6', '#CC0000', '#009639', '#6e7275', '#ff6600', '#7c3aed', '#0891b2', '#b45309'];
+  const routeColorCache = {};
+  function colorForRoute(route) {
+    if (!routeColorCache[route]) {
+      const keys = Object.keys(routeColorCache).length;
+      routeColorCache[route] = ROUTE_PALETTE[keys % ROUTE_PALETTE.length];
+    }
+    return routeColorCache[route];
+  }
 
-            if (validPredictions.length === 0) {
-                busList.innerHTML = '<div class="error">No valid bus predictions available</div>';
-                return;
-            }
+  function setStatus(ok, msg) {
+    document.getElementById('sDot').className = 's-dot' + (ok ? '' : ' err');
+    document.getElementById('sTxt').textContent = msg;
+  }
 
-            const busHTML = validPredictions.map(bus => `
-                <div class="bus-row">
-                    <div class="route-indicator">
-                        ${bus.RouteID || '?'}
-                    </div>
-                    <div>
-                        <div class="destination">${bus.DirectionText || 'Unknown Destination'}</div>
-                        <div class="direction">${bus.DirectionNum === '0' ? 'Inbound' : bus.DirectionNum === '1' ? 'Outbound' : 'Direction ' + (bus.DirectionNum || '?')}</div>
-                    </div>
-                    <div class="trip-id">${bus.TripID ? 'Trip ' + bus.TripID.slice(-4) : 'Trip ?'}</div>
-                    <div class="arrival-time">${formatArrivalTime(bus.Minutes)}</div>
-                </div>
-            `).join('');
+  function updateDateTime() {
+    const now = new Date();
+    const date = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TIME_ZONE });
+    const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', timeZone: TIME_ZONE });
+    document.getElementById('dateTime').textContent = `${date} · ${time}`;
+  }
 
-            busList.innerHTML = busHTML;
-        }
+  function formatArrival(minutes) {
+    if (minutes === null || minutes === undefined || minutes === '') return { val: '—', unit: false };
+    if (minutes === '0' || minutes === 0) return { val: 'ARR', unit: false };
+    return { val: minutes, unit: true };
+  }
 
-        function updateLastUpdated() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour12: false, 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('lastUpdated').textContent = `Last updated: ${timeString}`;
-        }
+  function render(predictions) {
+    const el = document.getElementById('busList');
+    if (!predictions?.length) { el.innerHTML = '<div class="msg err">No predictions available</div>'; return; }
+    const valid = predictions.filter(p => p && p.RouteID);
+    if (!valid.length) { el.innerHTML = '<div class="msg err">No valid bus data</div>'; return; }
 
-        async function updateDisplay() {
-            try {
-                const data = await fetchBusData();
-                
-                // Ensure we have the expected data structure
-                if (!data || typeof data !== 'object') {
-                    throw new Error('Invalid API response format');
-                }
-                
-                renderBuses(data.Predictions);
-                updateLastUpdated();
-                
-            } catch (error) {
-                console.error('Failed to update display:', error);
-                const errorMessage = error.message.includes('API key') 
-                    ? 'Invalid API Key - Please check your WMATA API credentials'
-                    : `Connection Error: ${error.message}`;
-                    
-                document.getElementById('busList').innerHTML = 
-                    `<div class="error">${errorMessage}<br><small>Press 'R' to retry or click the refresh indicator</small></div>`;
-            }
-        }
+    // Group by route, preserving arrival order within each route
+    const groups = {};
+    valid.forEach(p => { (groups[p.RouteID] = groups[p.RouteID] || []).push(p); });
+    const grouped = [];
+    Object.keys(groups).forEach(route => grouped.push(...groups[route]));
 
-        // Initialize display
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDisplay();
-            
-            // Add click handler for manual refresh
-            document.querySelector('.refresh-indicator').addEventListener('click', function() {
-                console.log('Manual refresh triggered');
-                updateDisplay();
-            });
-            
-            // Add keyboard shortcut for refresh (R key)
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'r' || e.key === 'R') {
-                    console.log('Keyboard refresh triggered');
-                    updateDisplay();
-                }
-            });
-        });
+    const rows = grouped.slice(0, MAX_ROWS);
 
-        // Update every 30 seconds
-        setInterval(updateDisplay, 30000);
-    </script>
+    el.innerHTML = rows.map((b, i) => {
+      const bg = colorForRoute(b.RouteID);
+      const fg = '#ffffff';
+      const fgMuted = 'rgba(255,255,255,0.7)';
+      const dest = b.DirectionText || 'Unknown destination';
+      const dirLabel = b.DirectionNum === '0' ? 'Inbound' : b.DirectionNum === '1' ? 'Outbound' : '';
+      const trip = b.TripID ? b.TripID.slice(-4) : '—';
+      const arr = formatArrival(b.Minutes);
+      const isNewGroup = i > 0 && rows[i - 1].RouteID !== b.RouteID;
+      return `
+      <div class="bus-row${isNewGroup ? ' group-start' : ''}" style="background:${bg};animation-delay:${i * 0.05}s">
+        <div class="route-tag" style="color:${fg}">${b.RouteID || '?'}</div>
+        <div class="dest-wrap">
+          <div class="dest-name" style="color:${fg}">${dest}</div>
+          ${dirLabel ? `<div class="dir-name" style="color:${fgMuted}">${dirLabel}</div>` : ''}
+        </div>
+        <div class="trip-col">
+          <div class="trip-val" style="color:${fg}">${trip}</div>
+          <div class="trip-lbl" style="color:${fgMuted}">trip</div>
+        </div>
+        <div class="arr-col">
+          <div class="arr-chip" style="color:${fg}">
+            <span class="arr-num">${arr.val}</span>
+            ${arr.unit ? `<span class="arr-unit" style="color:${fgMuted}">min</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function refresh() {
+    try {
+      const res = await fetch(`https://api.wmata.com/NextBusService.svc/json/jPredictions?StopID=${BUS_STOP_ID}&api_key=${API_KEY}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      render(data.Predictions);
+      setStatus(true, 'Normal Operations');
+      document.getElementById('lastUpdated').textContent =
+        'Last updated: ' + new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: TIME_ZONE });
+    } catch (e) {
+      document.getElementById('busList').innerHTML = `<div class="msg err">Connection error — ${e.message}</div>`;
+      setStatus(false, 'Data unavailable');
+    }
+  }
+
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+  refresh();
+  setInterval(refresh, 30000);
+</script>
 </body>
 </html>
